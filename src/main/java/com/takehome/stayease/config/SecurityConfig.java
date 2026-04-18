@@ -1,12 +1,8 @@
 package com.takehome.stayease.config;
 
-import com.takehome.stayease.entity.User;
-import com.takehome.stayease.repository.UserRepository;
-import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
@@ -16,9 +12,7 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
@@ -31,7 +25,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 public class SecurityConfig {
 
   private final JwtAuthFilter jwtAuthFilter;
-  private final UserRepository userRepository;
+  private final UserDetailsService userDetailsService;
 
   @Bean
   public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -39,12 +33,18 @@ public class SecurityConfig {
         .csrf(AbstractHttpConfigurer::disable)
         .authorizeHttpRequests(auth -> auth
             .requestMatchers("/api/users/register", "/api/users/login").permitAll()
-            .requestMatchers(HttpMethod.GET, "/api/hotels").permitAll()
+            .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/hotels").permitAll()
             .anyRequest().authenticated()
         )
-        .sessionManagement(session -> session
-            .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+        .exceptionHandling(ex -> ex
+            .accessDeniedHandler((request, response, accessDeniedException) -> {
+              response.setStatus(401);
+              response.setContentType("application/json");
+              response.getWriter().write("{\"status\":401,\"message\":\"Access denied: insufficient permissions\"}");
+            })
         )
+        .sessionManagement(
+            session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
         .authenticationProvider(authenticationProvider())
         .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 
@@ -52,22 +52,9 @@ public class SecurityConfig {
   }
 
   @Bean
-  public UserDetailsService userDetailsService() {
-    return email -> {
-      User user = userRepository.findByEmail(email)
-          .orElseThrow(() -> new UsernameNotFoundException("User not found: " + email));
-      return new org.springframework.security.core.userdetails.User(
-          user.getEmail(),
-          user.getPassword(),
-          List.of(new SimpleGrantedAuthority("ROLE_" + user.getRole().name()))
-      );
-    };
-  }
-
-  @Bean
   public AuthenticationProvider authenticationProvider() {
     DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
-    provider.setUserDetailsService(userDetailsService());
+    provider.setUserDetailsService(userDetailsService);
     provider.setPasswordEncoder(passwordEncoder());
     return provider;
   }
