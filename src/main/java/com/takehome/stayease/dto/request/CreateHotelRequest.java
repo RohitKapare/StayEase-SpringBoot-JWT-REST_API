@@ -16,11 +16,14 @@ public class CreateHotelRequest {
 
   private String description;
 
-  @NotNull(message = "Total rooms is required")
   @Min(value = 1, message = "Total rooms must be at least 1")
   private Integer totalRooms;
 
   @NotNull(message = "Available rooms is required")
   @Min(value = 0, message = "Available rooms cannot be negative")
   private Integer availableRooms;
+
+  public Integer getTotalRooms() {
+    return totalRooms != null ? totalRooms : availableRooms;
+  }
 }
