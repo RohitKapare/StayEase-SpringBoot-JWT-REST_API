@@ -30,7 +30,8 @@ public class BookingServiceImpl implements BookingService {
 
   @Override
   @Transactional
-  public BookingResponse createBooking(Long hotelId, CreateBookingRequest request, String userEmail) {
+  public BookingResponse createBooking(Long hotelId, CreateBookingRequest request,
+      String userEmail) {
     log.info("Creating booking for hotel {} by user {}", hotelId, userEmail);
 
     if (!request.getCheckOutDate().isAfter(request.getCheckInDate())) {
@@ -67,7 +68,8 @@ public class BookingServiceImpl implements BookingService {
   public BookingResponse getBooking(Long bookingId) {
     log.debug("Fetching booking with id: {}", bookingId);
     Booking booking = bookingRepository.findById(bookingId)
-        .orElseThrow(() -> new ResourceNotFoundException("Booking not found with id: " + bookingId));
+        .orElseThrow(
+            () -> new ResourceNotFoundException("Booking not found with id: " + bookingId));
     return bookingMapper.toResponse(booking);
   }
 
@@ -76,7 +78,8 @@ public class BookingServiceImpl implements BookingService {
   public void cancelBooking(Long bookingId) {
     log.info("Cancelling booking with id: {}", bookingId);
     Booking booking = bookingRepository.findById(bookingId)
-        .orElseThrow(() -> new ResourceNotFoundException("Booking not found with id: " + bookingId));
+        .orElseThrow(
+            () -> new ResourceNotFoundException("Booking not found with id: " + bookingId));
 
     if (booking.getStatus() == Booking.Status.CANCELLED) {
       throw new BadRequestException("Booking is already cancelled");
