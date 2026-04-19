@@ -13,18 +13,18 @@ It supports user registration/login with **JWT-based stateless authentication**,
 
 ## Key Features
 
-| Feature | Description |
-|---|---|
-| **User Registration & Login** | Sign up and login using email/password, BCrypt hashed passwords |
-| **JWT Authentication** | Stateless authentication using Bearer tokens |
-| **Role-Based Access Control** | Roles: `USER`, `HOTEL_MANAGER`, `ADMIN` |
-| **Hotel Management** | Browse hotels publicly; Admin can create/delete; Manager can update |
-| **Booking Management** | Users can book rooms; Managers can cancel bookings |
-| **Room Availability Protection** | Hotels track `availableRooms` to prevent overbooking |
-| **Validation & Error Handling** | Input validation + consistent HTTP error responses |
-| **DTO + MapStruct** | Clean separation between API contracts and entities |
-| **Logging** | SLF4J/Logback logging across layers |
-| **Unit Tests** | JUnit5 + Mockito + MockMvc (minimum 3 tests) |
+| Feature                          | Description                                                         |
+|----------------------------------|---------------------------------------------------------------------|
+| **User Registration & Login**    | Sign up and login using email/password, BCrypt hashed passwords     |
+| **JWT Authentication**           | Stateless authentication using Bearer tokens                        |
+| **Role-Based Access Control**    | Roles: `USER`, `HOTEL_MANAGER`, `ADMIN`                             |
+| **Hotel Management**             | Browse hotels publicly; Admin can create/delete; Manager can update |
+| **Booking Management**           | Users can book rooms; Managers can cancel bookings                  |
+| **Room Availability Protection** | Hotels track `availableRooms` to prevent overbooking                |
+| **Validation & Error Handling**  | Input validation + consistent HTTP error responses                  |
+| **DTO + MapStruct**              | Clean separation between API contracts and entities                 |
+| **Logging**                      | SLF4J/Logback logging across layers                                 |
+| **Unit Tests**                   | JUnit5 + Mockito + MockMvc (minimum 3 tests)                        |
 
 ---
 
@@ -52,11 +52,11 @@ It supports user registration/login with **JWT-based stateless authentication**,
 
 ## Roles & Access Rules
 
-| Role | Permissions |
-|---|---|
-| `USER` | Register/Login; Browse hotels; Create bookings |
-| `HOTEL_MANAGER` | Update hotel details; Cancel bookings |
-| `ADMIN` | Create hotels; Delete hotels |
+| Role            | Permissions                                    |
+|-----------------|------------------------------------------------|
+| `USER`          | Register/Login; Browse hotels; Create bookings |
+| `HOTEL_MANAGER` | Update hotel details; Cancel bookings          |
+| `ADMIN`         | Create hotels; Delete hotels                   |
 
 **Business rules**
 1. Users can be `USER`, `HOTEL_MANAGER`, or `ADMIN`.
@@ -129,24 +129,24 @@ erDiagram
 Update `src/main/resources/application.properties` with your MySQL credentials:
 
 ```properties
-spring.application.name=stayease  
-jwt.secret=MyVerySecretKeyThatShouldBeLongAndRandom  
-jwt.expiration=3600000  
+spring.application.name=stayease
+jwt.secret=MyVerySecretKeyThatShouldBeLongAndRandom
+jwt.expiration=3600000
   
 # Database Configuration  
-server.port=8081  
+server.port=8081
 #Database Configuration  
-spring.datasource.url=jdbc:mysql://localhost:3306/stayease_db?createDatabaseIfNotExist=true  
-spring.datasource.username=root  
-spring.datasource.password=Test@1234  
+spring.datasource.url=jdbc:mysql://localhost:3306/stayease_db?createDatabaseIfNotExist=true
+spring.datasource.username=root
+spring.datasource.password=Test@1234
   
-spring.jpa.hibernate.ddl-auto=update  
-spring.jpa.show-sql=true  
-spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.MySQLDialect  
-spring.jpa.properties.hibernate.format_sql=true  
+spring.jpa.hibernate.ddl-auto=update
+spring.jpa.show-sql=true
+spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.MySQLDialect
+spring.jpa.properties.hibernate.format_sql=true
   
-logging.level.com.takehome.stayease=DEBUG  
-logging.level.org.springframework.security=INFO  
+logging.level.com.takehome.stayease=DEBUG
+logging.level.org.springframework.security=INFO
   
 server.error.include-message=always
 ```
