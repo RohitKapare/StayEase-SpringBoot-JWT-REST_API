@@ -1,0 +1,556 @@
+{
+	"info": {
+		"name": "StayEase API",
+		"description": "StayEase Hotel Booking API Collection.\n\n**Execution Order:**\nRequests must be executed in the following order for variables to be auto-populated:\n\n1. **User Authentication & Registration**\n   - Register Customer → sets `customerToken`\n   - Register Hotel Manager → sets `managerToken`\n   - Register Admin → sets `adminToken`\n   - Register with Invalid Password (no dependency)\n   - Register with Invalid Email (no dependency)\n   - Login Successfully (requires customer to be registered)\n   - Login with Invalid Credentials (requires customer to be registered)\n\n2. **Hotel Management** (requires tokens from step 1)\n   - View Hotels Publicly (no dependency)\n   - Admin Create Hotel → sets `hotelId`\n   - Manager Create Hotel (Unauthorized)\n   - Manager Update Hotel (requires `hotelId`)\n   - Admin Delete Hotel (requires `hotelId`)\n   - Manager Delete Hotel (Unauthorized) (requires `hotelId`)\n\n3. **Booking Management** (requires tokens and `hotelId` from previous steps)\n   - Create Hotel with Limited Rooms → sets `hotelId` (overrides previous)\n   - Book a Room → sets `bookingId`\n   - Book When No Rooms Available (requires `hotelId`)\n   - Retrieve Booking Details (requires `bookingId`)\n   - Manager Cancel Booking (requires `bookingId`)\n   - Customer Cancel Booking (Unauthorized) (requires `bookingId`)",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "http://localhost:8081/api"
+		},
+		{
+			"key": "customerToken",
+			"value": ""
+		},
+		{
+			"key": "managerToken",
+			"value": ""
+		},
+		{
+			"key": "adminToken",
+			"value": ""
+		},
+		{
+			"key": "hotelId",
+			"value": ""
+		},
+		{
+			"key": "bookingId",
+			"value": ""
+		}
+	],
+	"item": [
+		{
+			"name": "User Authentication & Registration",
+			"item": [
+				{
+					"name": "Register Customer",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"customer@test.com\",\n  \"password\": \"Test@123!\",\n  \"firstName\": \"Test\",\n  \"lastName\": \"Customer\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/users/register",
+							"host": ["{{baseUrl}}"],
+							"path": ["users", "register"]
+						}
+					},
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    var jsonData = pm.response.json();",
+									"    if (jsonData.token) {",
+									"        pm.collectionVariables.set('customerToken', jsonData.token);",
+									"    }",
+									"}"
+								]
+							}
+						}
+					]
+				},
+				{
+					"name": "Register Hotel Manager",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"manager@test.com\",\n  \"password\": \"Manager@123!\",\n  \"firstName\": \"Test\",\n  \"lastName\": \"Manager\",\n  \"role\": \"HOTEL_MANAGER\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/users/register",
+							"host": ["{{baseUrl}}"],
+							"path": ["users", "register"]
+						}
+					},
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    var jsonData = pm.response.json();",
+									"    if (jsonData.token) {",
+									"        pm.collectionVariables.set('managerToken', jsonData.token);",
+									"    }",
+									"}"
+								]
+							}
+						}
+					]
+				},
+				{
+					"name": "Register Admin",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"admin@test.com\",\n  \"password\": \"Admin@123!\",\n  \"firstName\": \"Test\",\n  \"lastName\": \"Admin\",\n  \"role\": \"ADMIN\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/users/register",
+							"host": ["{{baseUrl}}"],
+							"path": ["users", "register"]
+						}
+					},
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    var jsonData = pm.response.json();",
+									"    if (jsonData.token) {",
+									"        pm.collectionVariables.set('adminToken', jsonData.token);",
+									"    }",
+									"}"
+								]
+							}
+						}
+					]
+				},
+				{
+					"name": "Register with Invalid Password",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"invalid@test.com\",\n  \"password\": \"weak\",\n  \"firstName\": \"Test\",\n  \"lastName\": \"Invalid\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/users/register",
+							"host": ["{{baseUrl}}"],
+							"path": ["users", "register"]
+						}
+					}
+				},
+				{
+					"name": "Register with Invalid Email",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"invalid-email\",\n  \"password\": \"Valid@123!\",\n  \"firstName\": \"Test\",\n  \"lastName\": \"Invalid\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/users/register",
+							"host": ["{{baseUrl}}"],
+							"path": ["users", "register"]
+						}
+					}
+				},
+				{
+					"name": "Login Successfully",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"customer@test.com\",\n  \"password\": \"Test@123!\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/users/login",
+							"host": ["{{baseUrl}}"],
+							"path": ["users", "login"]
+						}
+					},
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    var jsonData = pm.response.json();",
+									"    if (jsonData.token) {",
+									"        pm.collectionVariables.set('customerToken', jsonData.token);",
+									"    }",
+									"}"
+								]
+							}
+						}
+					]
+				},
+				{
+					"name": "Login with Invalid Credentials",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"customer@test.com\",\n  \"password\": \"wrongpassword\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/users/login",
+							"host": ["{{baseUrl}}"],
+							"path": ["users", "login"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Hotel Management",
+			"item": [
+				{
+					"name": "View Hotels Publicly",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/hotels",
+							"host": ["{{baseUrl}}"],
+							"path": ["hotels"]
+						}
+					}
+				},
+				{
+					"name": "Admin Create Hotel",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{adminToken}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Test Hotel\",\n  \"location\": \"Test Location\",\n  \"description\": \"Test Description\",\n  \"availableRooms\": 10\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/hotels",
+							"host": ["{{baseUrl}}"],
+							"path": ["hotels"]
+						}
+					},
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    var jsonData = pm.response.json();",
+									"    if (jsonData.id) {",
+									"        pm.collectionVariables.set('hotelId', jsonData.id);",
+									"    }",
+									"}"
+								]
+							}
+						}
+					]
+				},
+				{
+					"name": "Manager Create Hotel (Unauthorized)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{managerToken}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Unauthorized Hotel\",\n  \"location\": \"Test Location\",\n  \"description\": \"Test Description\",\n  \"availableRooms\": 5\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/hotels",
+							"host": ["{{baseUrl}}"],
+							"path": ["hotels"]
+						}
+					}
+				},
+				{
+					"name": "Manager Update Hotel",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{managerToken}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Updated Hotel Name\",\n  \"availableRooms\": 15\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/hotels/{{hotelId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["hotels", "{{hotelId}}"]
+						}
+					}
+				},
+				{
+					"name": "Admin Delete Hotel",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{adminToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/hotels/{{hotelId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["hotels", "{{hotelId}}"]
+						}
+					}
+				},
+				{
+					"name": "Manager Delete Hotel (Unauthorized)",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{managerToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/hotels/{{hotelId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["hotels", "{{hotelId}}"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Booking Management",
+			"item": [
+				{
+					"name": "Create Hotel with Limited Rooms",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{adminToken}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Limited Rooms Hotel\",\n  \"location\": \"Test Location\",\n  \"description\": \"Hotel with limited availability for testing\",\n  \"totalRooms\": 1,\n  \"availableRooms\": 1\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/hotels",
+							"host": ["{{baseUrl}}"],
+							"path": ["hotels"]
+						}
+					},
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    var jsonData = pm.response.json();",
+									"    if (jsonData.id) {",
+									"        pm.collectionVariables.set('hotelId', jsonData.id);",
+									"    }",
+									"}"
+								]
+							}
+						}
+					]
+				},
+				{
+					"name": "Book a Room",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{customerToken}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"checkInDate\": \"2026-04-20\",\n  \"checkOutDate\": \"2026-04-22\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/bookings/{{hotelId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["bookings", "{{hotelId}}"]
+						}
+					},
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    var jsonData = pm.response.json();",
+									"    if (jsonData.bookingId) {",
+									"        pm.collectionVariables.set('bookingId', jsonData.bookingId);",
+									"    }",
+									"}"
+								]
+							}
+						}
+					]
+				},
+				{
+					"name": "Book When No Rooms Available",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{customerToken}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"checkInDate\": \"2026-04-20\",\n  \"checkOutDate\": \"2026-04-22\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/bookings/{{hotelId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["bookings", "{{hotelId}}"]
+						}
+					}
+				},
+				{
+					"name": "Retrieve Booking Details",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{customerToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/bookings/{{bookingId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["bookings", "{{bookingId}}"]
+						}
+					}
+				},
+				{
+					"name": "Manager Cancel Booking",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{managerToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/bookings/{{bookingId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["bookings", "{{bookingId}}"]
+						}
+					}
+				},
+				{
+					"name": "Customer Cancel Booking (Unauthorized)",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{customerToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/bookings/{{bookingId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["bookings", "{{bookingId}}"]
+						}
+					}
+				}
+			]
+		}
+	]
+}
